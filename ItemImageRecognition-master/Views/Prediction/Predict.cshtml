@@ -1,0 +1,179 @@
+﻿@model FindProductByImage.ViewModel.PredictionViewModel
+
+@*@using FindProductByImage.Controllers*@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Scan Item Images</title>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+    <style type="text/css">
+
+        body {
+            font-family: Helvetica, sans-serif;
+        }
+
+        h2, h3 {
+            margin-top: 0;
+        }
+
+        form {
+            margin-top: 15px;
+        }
+
+            form > input {
+                margin-right: 15px;
+            }
+
+
+        #buttonhide {
+            background: transparent;
+            border: none !important;
+            font-size: 0;
+        }
+    </style>
+
+</head>
+<body class="container">
+    <br />
+    <div class="col-lg-6">
+        <form asp-action="SearchItem" class="panel">
+            <div class="row panel-heading">
+
+                <label class="col-sm-2 col-form-label">Item ID</label>
+
+                <div class="col-sm-6">
+                    <input asp-for="ID" id="ItemID" value="" class="form-control" />
+                    <span asp-validation-for="ID" class="text-danger"></span>
+                </div>
+                <div class="col-sm-3">
+                    <button type="submit" class="btn btn-success">Add</button>
+                </div>
+
+            </div>
+
+            <div class="panel-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID
+                            </th>
+                            <th>
+                               Description
+                            </th>
+                            <th>
+                                Price
+                            </th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null)
+                        {
+                            foreach (var item in Model.lstProductDetails)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.ID)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Name)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Price)
+                                    </td>
+
+
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+                    @if (Model != null)
+                    {
+                        <tfoot class="panel-footer"><tr>
+    <td></td>
+    <td>Total</td>
+    <td> @Model.lstProductDetails.Sum(p => p.Price)</td>
+</tr>
+                        </tfoot>
+                    }
+                    </table>
+
+           </div>
+
+       </form>
+
+   </div>
+
+   <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">Camera</div>
+            <div class="panel-body">
+                <div id="my_camera"></div>
+                <!-- A button for taking snaps -->
+                <form>
+                    <input type="button" class="btn btn-success" value="Take Snapshot" onclick="take_snapshot()">
+                </form>
+
+            </div>
+        </div>
+        <br />
+        <div class="panel panel-default">
+            <div class="panel-heading">Captured Photo</div>
+            <div class="panel-body">
+                <div id="results">Your captured image will appear here...</div>
+            </div>
+            <br />
+            <br />
+
+        </div>
+    </div>
+
+    @*<div class="col-md-4">
+        
+    </div>*@
+
+    @*<div class="col-md-2">    </div>*@
+    <!-- First, include the Webcam.js JavaScript Library -->
+    <script src="~/webcamjs/webcam.js"></script>
+    <!-- Configure a few settings and attach camera -->
+    <script language="JavaScript">
+        Webcam.set({
+            width: 320,
+            height: 240,
+            image_format: 'jpeg',
+            jpeg_quality: 90
+        });
+        Webcam.attach('#my_camera');
+    </script>
+
+    <!-- Code to handle taking the snapshot and displaying it locally -->
+    <script language="JavaScript">
+        function take_snapshot() {
+            // take snapshot and get image data
+            Webcam.snap(function (data_uri) {
+                // display results in page
+                document.getElementById('results').innerHTML =
+                    '<img src="' +
+                    data_uri +
+                    '"/>';
+                
+                Webcam.upload(data_uri,
+                    '/Prediction/Predict',
+                    function (code, text) {
+                        if (text == "Product not found")
+                            alert("Product not found");
+                        else
+                            window.location.href = '@Url.Action("SearchItem", "Prediction" , new {id = "dummy" })'.replace("dummy", text);
+                        
+                    });
+                
+            });
+
+        }
+    </script>
+
+</body>
+</html>
+
